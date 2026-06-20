@@ -1,0 +1,15 @@
+# Resultados de ejecución (generados automáticamente)
+results_debug/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Pabot (resultados paralelos)
+pabot_results/
+.pabot_lock
+
+# variables de entorno (pueden contener información sensible)
+
+\resources\variables\env.resource

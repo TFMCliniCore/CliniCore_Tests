@@ -1,0 +1,2932 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot Metrics</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.1.0/css/buttons.dataTables.min.css">
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      background-color: #eeeeee;
+      display: flex;
+    }
+
+    .tablecard {
+      background-color: white;
+      font-size: 14px;
+    }
+
+    .sidebar {
+      width: 80px;
+      background-color: #343a40;
+      color: white;
+      min-height: 100vh;
+      text-align: center;
+      position: fixed;
+    }
+
+    .section {
+      padding-left: 80px;
+    }
+
+    .sidebar .brand {
+      font-size: 16px;
+      padding: 15px 0;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .sidebar .nav-link {
+      color: #ccc;
+      padding: 15px 0;
+      cursor: pointer;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: white;
+      background-color: #495057;
+    }
+
+    .sidebar .icon {
+      font-size: 24px;
+    }
+
+    .sidebar .count {
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .loader {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background-color: rgb(249, 249, 249);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader i {
+      font-size: 60px;
+      color: #333;
+    }
+
+    .hide {
+      display: none;
+    }
+
+    tfoot input {
+      width: 100%;
+      padding: 3px;
+      box-sizing: border-box;
+    }
+
+    tfoot {
+      display: table-header-group;
+    }
+
+    .dt-button {
+      border: none;
+      color: #fff;
+      margin: 5px;
+      border-radius: 12px;
+      cursor: pointer;
+      padding-left: 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .dt-button.copyButton {
+      background-color: seashell;
+    }
+
+    .dt-button.csvButton {
+      background-color: cornsilk;
+    }
+
+    .dt-button.excelButton {
+      background-color: lavender;
+    }
+
+    .dt-button.printButton {
+      background-color: whitesmoke;
+    }
+
+    .dt-button.colviButton {
+      background-color: gainsboro;
+    }
+
+    th,
+    td {
+      text-align: center;
+      max-width: 100px;
+    }
+
+    .dt-buttons {
+      margin-left: 5px;
+    }
+
+    .row {
+      padding: 5px;
+    }
+
+    .rowcard {
+      padding: 10px;
+      border-radius: 15px;
+      background-color: white;
+    }
+
+    .card-header-new {
+      font-weight: bold;
+      color: gray;
+      padding-left: 5px;
+    }
+
+    .card-table,
+    .suite-table,
+    .ecard-table,
+    .table {
+      width: 100%;
+    }
+
+    .suite-table th {
+      width: 25%;
+      color: #666;
+    }
+
+    .ecard-table tr,
+    .table tr {
+      height: 25px;
+      padding-left: 5px;
+    }
+
+    .table td,
+    .table tr {
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    .ecard-table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .card-table tr {
+      height: 25px;
+    }
+
+    .card-table td {
+      width: 50%;
+    }
+
+    .card-table tr:first-child {
+      font-size: 30px;
+    }
+
+    .card-table tr:last-child {
+      font-size: 10px;
+      color: gray;
+    }
+
+    .total {
+      color: brown;
+    }
+
+    .pass,
+    .text-success {
+      color: green;
+    }
+
+    .fail,
+    .text-danger {
+      color: red;
+    }
+
+    .skip,
+    .text-warning {
+      color: orange;
+    }
+
+    .td_left {
+      word-wrap: break-word;
+      max-width: 250px;
+      white-space: normal;
+      text-align: left;
+    }
+
+    .suite-list,
+    .suite-details {
+      padding: 10px;
+    }
+
+    .scroll {
+      height: 800px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .suite-card,
+    .test-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .suite-card:hover,
+    .test-item:hover {
+      transform: translateY(-5px);
+    }
+
+    .card-body {
+      padding: 15px;
+    }
+
+    .suite-card.pass .card-body,
+    .test-item.pass .card-body {
+      border-left: 5px solid green;
+    }
+
+    .suite-card.fail .card-body,
+    .test-item.fail .card-body {
+      border-left: 5px solid red;
+    }
+
+    .suite-card.skip .card-body,
+    .test-item.skip .card-body {
+      border-left: 5px solid orange;
+    }
+
+    .test-details p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .keyword-item {
+      padding-left: 20px;
+      font-size: 0.85rem;
+      color: #d9534f;
+    }
+
+    .col-md-4,
+    .col-md-8 {
+      overflow-y: auto;
+    }
+
+    .suite-tracker {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .suite-card {
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .suite-card.pass {
+      background-color: #e6f4ea;
+      color: #2e7d32;
+    }
+
+    .suite-card.fail {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+
+    .suite-card.skip {
+      background-color: #fff3e0;
+      color: #ef6c00;
+    }
+
+    .filter-buttons button {
+      padding: 8px 12px;
+      margin-right: 5px;
+      border: 1px solid #ddd;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .filter-buttons button:hover {
+      background-color: #ddd;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+    }
+
+    .error-message-box {
+      border-left: 5px solid #f5c2c7;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      color: #842029;
+      font-size: 0.85rem;
+    }
+
+    .title {
+      word-wrap: break-word;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="loader">
+    <i class="fa fa-spinner fa-spin"></i>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column">
+    <div class="brand" style="color:darkgoldenrod">Metrics</div>
+    <a class="nav-link" data-target="dashboard" href="#dashboard" style="color:teal">
+      <i class="icon fas fa-tachometer-alt"></i>
+      <div class="count">Dashboard</div>
+    </a>
+    <a class="nav-link" data-target="suite" href="#suite" style="color: skyblue">
+      <i class="icon fas fa-folder"></i>
+      <div class="count">Suite</div>
+    </a>
+    <a class="nav-link" data-target="test" href="#test" style="color:green">
+      <i class="icon fas fa-vial"></i>
+      <div class="count">Test</div>
+    </a>
+    <a class="nav-link" data-target="kwtimes" href="#kwtimes" style="color:tomato">
+      <i class="icon fas fa-stopwatch"></i>
+      <div class="count">KW Times</div>
+    </a>
+    <a class="nav-link" data-target="details" href="#details" style="color:burlywood">
+      <i class="icon fas fa-info-circle"></i>
+      <div class="count">Details</div>
+    </a>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content">
+
+    <div class="section" id="dashboard">
+      <h2 style="color:silver">Dashboard</h2>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="col-md-12 rowcard">
+            <span class="card-header-new">Test Status:</span>
+            <div class="col-md-12" style="display: flex; align-items: center; justify-content: center;">
+              <div id="testPie"></div>
+            </div>
+            <div class="col-md-12">
+              <table class="card-table">
+                <tr>
+                  <td class="total">52</td>
+                  <td class="pass">52</td>
+                </tr>
+                <tr>
+                  <td>Total</td>
+                  <td>Pass</td>
+                </tr>
+              </table>
+              <table class="card-table">
+                <tr>
+                  <td class="fail">0</td>
+                  <td class="skip">0</td>
+                </tr>
+                <tr>
+                  <td>Fail</td>
+                  <td>Skip</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="col-md-12">
+            <div class="col-md-12 rowcard">
+              <span class="card-header-new">Suite Status:</span>
+              <div class="col-md-12">
+                <div id="suitePie"></div>
+              </div>
+            </div>
+          </div>
+          <div class="row"></div>
+
+          <div class="col-md-12">
+            <div class="col-md-12 rowcard">
+              <span class="card-header-new">Keyword Status:</span>
+              <div class="col-md-12">
+                <div id="keywordPie"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="col-md-12 rowcard">
+            <span class="card-header-new">Execution Duration (m):</span>
+            <table class="table">
+              <tr>
+                <th>Type</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Avg</th>
+              </tr>
+              <tr>
+                <td class="suite-list" style="text-align: left;">Suite</td>
+                <td class="suite-list">0.01</td>
+                <td class="suite-list">0.01</td>
+                <td class="suite-list">0.01</td>
+              </tr>
+              <tr>
+                <td class="suite-list" style="text-align: left;">Test</td>
+                <td class="suite-list">0.0</td>
+                <td class="suite-list">0.0</td>
+                <td class="suite-list">0.0</td>
+              </tr>
+            </table>
+          </div>
+          <div class="row"></div>
+          <div class="col-md-12 rowcard">
+            <span class="card-header-new">Execution Info:</span>
+            <table class="table">
+              <tr>
+                <th>Action</th>
+                <th>Time</th>
+              </tr>
+              <tr>
+                <td class="suite-list" style="text-align: left;">Start Time</td>
+                <td>2026-06-20 16:09:28.116000</td>
+              </tr>
+              <tr>
+                <td class="suite-list" style="text-align: left;">End Time</td>
+                <td>2026-06-20 16:09:30.609000</td>
+              </tr>
+              <tr>
+                <td class="suite-list" style="text-align: left;">Duration</td>
+                <td>0 days 00:00:02.493000</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+
+        <div class="row"></div>
+
+      </div>
+      <div class="row"></div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="col-md-12 rowcard">
+            <span class="card-header-new">Top 10 Failed Suites:</span>
+            <div class="col-md-12">
+              <div id="suiteFailureLineID"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="col-md-12 rowcard">
+            <span class="card-header-new">Test Count By Elapsed Time:</span>
+            <div class="col-md-12">
+              <div id="testExecutionTrends"></div>
+            </div>
+          </div>
+        </div>
+        <div class="row"></div>
+      </div>
+    </div>
+
+    <!-- Suite Data -->
+    <div class="section" id="suite">
+      <h2 style="color:silver">Suite Metrics</h2>
+      <div class="row"></div>
+      <table id="sm" class="display tablecard" style="width:100%">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Pass</th>
+            <th>Fail</th>
+            <th>Skip</th>
+            <th>Time (s)</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th><input type="text" placeholder="Search Name" /></th>
+            <th><input type="text" placeholder="Search Status" /></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </tfoot>
+        <tbody>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.01 Auth.TC Auth"
+              onclick="openInNewTab('log.html#s1-s1-s1','#s1-s1-s1')"
+              style="cursor: pointer; color:blue;">
+              Tests.01 Auth.TC Auth</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>8</td>
+            <td style="color: green">8</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.32</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.02 Entidades.TC Clientes"
+              onclick="openInNewTab('log.html#s1-s2-s1','#s1-s2-s1')"
+              style="cursor: pointer; color:blue;">
+              Tests.02 Entidades.TC Clientes</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>9</td>
+            <td style="color: green">9</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.41</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.02 Entidades.TC Pacientes"
+              onclick="openInNewTab('log.html#s1-s2-s2','#s1-s2-s2')"
+              style="cursor: pointer; color:blue;">
+              Tests.02 Entidades.TC Pacientes</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>7</td>
+            <td style="color: green">7</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.34</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.03 Agenda.TC Citas"
+              onclick="openInNewTab('log.html#s1-s3-s1','#s1-s3-s1')"
+              style="cursor: pointer; color:blue;">
+              Tests.03 Agenda.TC Citas</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>10</td>
+            <td style="color: green">10</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.55</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.04 Inventario.TC Productos"
+              onclick="openInNewTab('log.html#s1-s4-s1','#s1-s4-s1')"
+              style="cursor: pointer; color:blue;">
+              Tests.04 Inventario.TC Productos</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>11</td>
+            <td style="color: green">11</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.44</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" data-toggle="tooltip" title="Tests.05 Integracion.TC Flujo E2E"
+              onclick="openInNewTab('log.html#s1-s5-s1','#s1-s5-s1')"
+              style="cursor: pointer; color:blue;">
+              Tests.05 Integracion.TC Flujo E2E</td>
+            
+            <td style="color: green">PASS</td>
+            
+            <td>7</td>
+            <td style="color: green">7</td>
+            <td style="color: red">0</td>
+            <td style="color: orange">0</td>
+            <td>0.43</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Test Case Data -->
+    <div class="section" id="test">
+      <h2 style="color:silver">Test Metrics</h2>
+      <div class="row"></div>
+      <table id="tm" class="display tablecard" style="width:100%">
+        <thead>
+          <tr>
+            <th style="width: 20%;">Suite Name</th>
+            <th style="width: 20%;">Test Name</th>
+            <th style="width: 10%;">Status</th>
+            <th style="width: 10%;">Time (s)</th>
+            <th style="width: 20%;">Message</th>
+            <th style="width: 20%;" class="">Tags</th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th><input type="text" placeholder="Search Suite" /></th>
+            <th><input type="text" placeholder="Search Name" /></th>
+            <th><input type="text" placeholder="Search Status" /></th>
+            <th></th>
+            <th><input type="text" placeholder="Search Message" /></th>
+            <th class=""></th>
+          </tr>
+        </tfoot>
+        <tbody>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-001: Health Check Del API Gateway"
+              onclick="openInNewTab('log.html#s1-s1-s1-t1','#s1-s1-s1-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-001: Health Check Del API Gateway</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, health, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-002: Login Exitoso Con Credenciales Validas"
+              onclick="openInNewTab('log.html#s1-s1-s1-t2','#s1-s1-s1-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-002: Login Exitoso Con Credenciales Validas</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.06</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, positivo, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-003: Login Fallido - Password Incorrecto"
+              onclick="openInNewTab('log.html#s1-s1-s1-t3','#s1-s1-s1-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-003: Login Fallido - Password Incorrecto</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, negativo, seguridad]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-004: Login Fallido - Email Inexistente"
+              onclick="openInNewTab('log.html#s1-s1-s1-t4','#s1-s1-s1-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-004: Login Fallido - Email Inexistente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, negativo, seguridad]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-005: Login Fallido - Campos Vacios"
+              onclick="openInNewTab('log.html#s1-s1-s1-t5','#s1-s1-s1-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-005: Login Fallido - Campos Vacios</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, negativo, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-006: Ruta Sin Token Responde (Gateway requiresAuth=false)"
+              onclick="openInNewTab('log.html#s1-s1-s1-t6','#s1-s1-s1-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-006: Ruta Sin Token Responde (Gateway requiresAuth=false)</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, configuracion, seguridad]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-007: Token Malformado No Interrumpe Gateway (requiresAuth=false)"
+              onclick="openInNewTab('log.html#s1-s1-s1-t7','#s1-s1-s1-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-007: Token Malformado No Interrumpe Gateway (requiresAuth=false)</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, configuracion, seguridad]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Auth')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-AUTH-008: Token Valido Permite Acceso A Ruta Protegida"
+              onclick="openInNewTab('log.html#s1-s1-s1-t8','#s1-s1-s1-t8')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-AUTH-008: Token Valido Permite Acceso A Ruta Protegida</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.09</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[auth, positivo, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-001: Listar Todos Los Clientes"
+              onclick="openInNewTab('log.html#s1-s2-s1-t1','#s1-s2-s1-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-001: Listar Todos Los Clientes</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, listado, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-002: Crear Nuevo Cliente"
+              onclick="openInNewTab('log.html#s1-s2-s1-t2','#s1-s2-s1-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-002: Crear Nuevo Cliente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.08</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, crud, positivo, setup]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-003: Obtener Cliente Por ID"
+              onclick="openInNewTab('log.html#s1-s2-s1-t3','#s1-s2-s1-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-003: Obtener Cliente Por ID</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, crud, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-004: Actualizar Ciudad Y Celular Con PATCH"
+              onclick="openInNewTab('log.html#s1-s2-s1-t4','#s1-s2-s1-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-004: Actualizar Ciudad Y Celular Con PATCH</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, crud, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-005: Crear Cliente Con Email Duplicado Retorna Error"
+              onclick="openInNewTab('log.html#s1-s2-s1-t5','#s1-s2-s1-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-005: Crear Cliente Con Email Duplicado Retorna Error</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.08</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, negativo, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-006: Crear Cliente Sin Campos Obligatorios"
+              onclick="openInNewTab('log.html#s1-s2-s1-t6','#s1-s2-s1-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-006: Crear Cliente Sin Campos Obligatorios</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.06</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, negativo, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-007: Obtener Cliente Con ID Inexistente"
+              onclick="openInNewTab('log.html#s1-s2-s1-t7','#s1-s2-s1-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-007: Obtener Cliente Con ID Inexistente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[clientes, negativo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-008: Eliminar Cliente"
+              onclick="openInNewTab('log.html#s1-s2-s1-t8','#s1-s2-s1-t8')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-008: Eliminar Cliente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[cleanup, clientes, crud]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Clientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CLI-009: Cliente Eliminado Retorna 404"
+              onclick="openInNewTab('log.html#s1-s2-s1-t9','#s1-s2-s1-t9')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CLI-009: Cliente Eliminado Retorna 404</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[cleanup, clientes, negativo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-001: Listar Todos Los Pacientes"
+              onclick="openInNewTab('log.html#s1-s2-s2-t1','#s1-s2-s2-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-001: Listar Todos Los Pacientes</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[listado, pacientes, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-002: Crear Nuevo Paciente"
+              onclick="openInNewTab('log.html#s1-s2-s2-t2','#s1-s2-s2-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-002: Crear Nuevo Paciente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, pacientes, positivo, setup]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-003: Obtener Paciente Por ID"
+              onclick="openInNewTab('log.html#s1-s2-s2-t3','#s1-s2-s2-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-003: Obtener Paciente Por ID</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, pacientes, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-004: Actualizar Peso Y Alimento Con PATCH"
+              onclick="openInNewTab('log.html#s1-s2-s2-t4','#s1-s2-s2-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-004: Actualizar Peso Y Alimento Con PATCH</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, pacientes, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-005: Crear Paciente Sin ClienteId Retorna Error"
+              onclick="openInNewTab('log.html#s1-s2-s2-t5','#s1-s2-s2-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-005: Crear Paciente Sin ClienteId Retorna Error</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[negativo, pacientes, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-006: Obtener Paciente Inexistente Retorna 404"
+              onclick="openInNewTab('log.html#s1-s2-s2-t6','#s1-s2-s2-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-006: Obtener Paciente Inexistente Retorna 404</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[negativo, pacientes]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Pacientes')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PAC-007: Eliminar Paciente"
+              onclick="openInNewTab('log.html#s1-s2-s2-t7','#s1-s2-s2-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PAC-007: Eliminar Paciente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[cleanup, crud, pacientes]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-001: Listar Todas Las Citas"
+              onclick="openInNewTab('log.html#s1-s3-s1-t1','#s1-s3-s1-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-001: Listar Todas Las Citas</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.05</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, listado, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-002: Crear Nueva Cita"
+              onclick="openInNewTab('log.html#s1-s3-s1-t2','#s1-s3-s1-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-002: Crear Nueva Cita</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, crud, positivo, setup]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-003: Obtener Cita Por ID"
+              onclick="openInNewTab('log.html#s1-s3-s1-t3','#s1-s3-s1-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-003: Obtener Cita Por ID</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, crud, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-004: Actualizar Motivo Con PATCH"
+              onclick="openInNewTab('log.html#s1-s3-s1-t4','#s1-s3-s1-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-004: Actualizar Motivo Con PATCH</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, crud, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-005: Filtrar Citas Por PacienteId"
+              onclick="openInNewTab('log.html#s1-s3-s1-t5','#s1-s3-s1-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-005: Filtrar Citas Por PacienteId</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, filtros, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-006: Filtrar Citas Por Tipo"
+              onclick="openInNewTab('log.html#s1-s3-s1-t6','#s1-s3-s1-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-006: Filtrar Citas Por Tipo</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.04</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, filtros, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-007: Filtrar Citas Por Rango De Fechas"
+              onclick="openInNewTab('log.html#s1-s3-s1-t7','#s1-s3-s1-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-007: Filtrar Citas Por Rango De Fechas</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, filtros, positivo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-008: Crear Cita Sin PacienteId Retorna 400"
+              onclick="openInNewTab('log.html#s1-s3-s1-t8','#s1-s3-s1-t8')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-008: Crear Cita Sin PacienteId Retorna 400</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.06</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, negativo, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-009: Obtener Cita Inexistente Retorna 404"
+              onclick="openInNewTab('log.html#s1-s3-s1-t9','#s1-s3-s1-t9')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-009: Obtener Cita Inexistente Retorna 404</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, negativo]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Citas')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-CIT-010: Eliminar Cita"
+              onclick="openInNewTab('log.html#s1-s3-s1-t10','#s1-s3-s1-t10')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-CIT-010: Eliminar Cita</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[citas, cleanup, crud]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-001: Listar Todos Los Productos"
+              onclick="openInNewTab('log.html#s1-s4-s1-t1','#s1-s4-s1-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-001: Listar Todos Los Productos</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.05</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[listado, productos, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-002: Crear Nuevo Producto"
+              onclick="openInNewTab('log.html#s1-s4-s1-t2','#s1-s4-s1-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-002: Crear Nuevo Producto</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, positivo, productos, setup]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-003: Obtener Producto Por ID"
+              onclick="openInNewTab('log.html#s1-s4-s1-t3','#s1-s4-s1-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-003: Obtener Producto Por ID</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, positivo, productos]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-004: Actualizar Precio Y Stock Minimo Con PATCH"
+              onclick="openInNewTab('log.html#s1-s4-s1-t4','#s1-s4-s1-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-004: Actualizar Precio Y Stock Minimo Con PATCH</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[crud, positivo, productos]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-005: Buscar Producto Por Nombre"
+              onclick="openInNewTab('log.html#s1-s4-s1-t5','#s1-s4-s1-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-005: Buscar Producto Por Nombre</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[busqueda, positivo, productos]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-006: Buscar Sin Parametro Q Retorna 400"
+              onclick="openInNewTab('log.html#s1-s4-s1-t6','#s1-s4-s1-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-006: Buscar Sin Parametro Q Retorna 400</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.01</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[busqueda, negativo, productos, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-007: Crear Producto Sin Nombre Retorna 400"
+              onclick="openInNewTab('log.html#s1-s4-s1-t7','#s1-s4-s1-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-007: Crear Producto Sin Nombre Retorna 400</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.06</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[negativo, productos, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-008: Crear Producto Sin Precio De Venta Retorna 400"
+              onclick="openInNewTab('log.html#s1-s4-s1-t8','#s1-s4-s1-t8')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-008: Crear Producto Sin Precio De Venta Retorna 400</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.06</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[negativo, productos, validacion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-009: Obtener Producto Inexistente Retorna 404"
+              onclick="openInNewTab('log.html#s1-s4-s1-t9','#s1-s4-s1-t9')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-009: Obtener Producto Inexistente Retorna 404</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[negativo, productos]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-010: Listar Productos Con Stock Bajo"
+              onclick="openInNewTab('log.html#s1-s4-s1-t10','#s1-s4-s1-t10')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-010: Listar Productos Con Stock Bajo</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[inventario, productos, smoke]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Productos')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-PRD-011: Eliminar Producto"
+              onclick="openInNewTab('log.html#s1-s4-s1-t11','#s1-s4-s1-t11')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-PRD-011: Eliminar Producto</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.02</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[cleanup, crud, productos]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-001: Registrar Nuevo Dueno De Mascota"
+              onclick="openInNewTab('log.html#s1-s5-s1-t1','#s1-s5-s1-t1')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-001: Registrar Nuevo Dueno De Mascota</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-002: Registrar Mascota Del Cliente"
+              onclick="openInNewTab('log.html#s1-s5-s1-t2','#s1-s5-s1-t2')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-002: Registrar Mascota Del Cliente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-003: Agendar Cita Para La Mascota"
+              onclick="openInNewTab('log.html#s1-s5-s1-t3','#s1-s5-s1-t3')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-003: Agendar Cita Para La Mascota</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-004: Consultar Agenda Del Paciente"
+              onclick="openInNewTab('log.html#s1-s5-s1-t4','#s1-s5-s1-t4')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-004: Consultar Agenda Del Paciente</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.03</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-005: Registrar Producto En Inventario Para La Cita"
+              onclick="openInNewTab('log.html#s1-s5-s1-t5','#s1-s5-s1-t5')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-005: Registrar Producto En Inventario Para La Cita</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-006: Verificar Consistencia De Datos Entre Servicios"
+              onclick="openInNewTab('log.html#s1-s5-s1-t6','#s1-s5-s1-t6')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-006: Verificar Consistencia De Datos Entre Servicios</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.07</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[consistency, e2e, flujo-completo, integracion]
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="td_left" style="width: 200px;">robot.result.TestSuite(name='TC Flujo E2E')</td>
+            <td class="td_left" data-toggle="tooltip" title="TC-E2E-007: Limpiar Datos Del Flujo E2E"
+              onclick="openInNewTab('log.html#s1-s5-s1-t7','#s1-s5-s1-t7')"
+              style="cursor: pointer; color:blue;width: 200px;">
+              TC-E2E-007: Limpiar Datos Del Flujo E2E</td>
+            
+            <td style="color:green">PASS</td>
+            
+            <td>0.08</td>
+            <td class="td_left" style="font-size: 12px"></td>
+            <td class=" td_left">[cleanup, e2e, integracion]
+            </td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Keyword Average -->
+    <div class="section" id="kwtimes">
+      <h2 style="color:silver">KW Times Metrics</h2>
+      <div class="row"></div>
+      <table id="kmt" class="display tablecard" style="width:100%">
+        <thead>
+          <tr>
+            <th>Keyword Name</th>
+            <th>Times</th>
+            <th>Fail Count</th>
+            <th>Min Duration(s)</th>
+            <th>Max Duration(s)</th>
+            <th>Average Duration(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          
+          <tr>
+            <td class="td_left">Construir Body Paciente</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Crear Headers Con Token</td>
+            <td>2</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Crear Sesion Desde Cero</td>
+            <td>5</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Create Session</td>
+            <td>7</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">DELETE Con Auth</td>
+            <td>11</td>
+            <td>0</td>
+            <td>0.02</td>
+            <td>0.02</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">DELETE On Session</td>
+            <td>11</td>
+            <td>0</td>
+            <td>0.02</td>
+            <td>0.02</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Delete All Sessions</td>
+            <td>6</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">GET</td>
+            <td>4</td>
+            <td>0</td>
+            <td>0.01</td>
+            <td>0.03</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">GET Con Auth</td>
+            <td>13</td>
+            <td>0</td>
+            <td>0.01</td>
+            <td>0.05</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">GET On Session</td>
+            <td>24</td>
+            <td>0</td>
+            <td>0.01</td>
+            <td>0.05</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Generar Documento Unico</td>
+            <td>7</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Generar Email Unico</td>
+            <td>4</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Inicializar Sesion Global</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.08</td>
+            <td>0.08</td>
+            <td>0.08</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Inicializar Suite Citas</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.1</td>
+            <td>0.1</td>
+            <td>0.1</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Inicializar Suite Pacientes</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.03</td>
+            <td>0.03</td>
+            <td>0.03</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Limpiar Suite Citas</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.04</td>
+            <td>0.04</td>
+            <td>0.04</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Limpiar Suite Pacientes</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0.02</td>
+            <td>0.02</td>
+            <td>0.02</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Login Debe Rechazar</td>
+            <td>2</td>
+            <td>0</td>
+            <td>0.01</td>
+            <td>0.07</td>
+            <td>0.04</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Obtener ID De Respuesta</td>
+            <td>11</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Obtener Token De Autenticacion</td>
+            <td>2</td>
+            <td>0</td>
+            <td>0.06</td>
+            <td>0.08</td>
+            <td>0.07</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">PATCH Con Auth</td>
+            <td>5</td>
+            <td>0</td>
+            <td>0.06</td>
+            <td>0.07</td>
+            <td>0.07</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">PATCH On Session</td>
+            <td>5</td>
+            <td>0</td>
+            <td>0.06</td>
+            <td>0.07</td>
+            <td>0.06</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">POST</td>
+            <td>6</td>
+            <td>0</td>
+            <td>0.01</td>
+            <td>0.07</td>
+            <td>0.05</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">POST Con Auth</td>
+            <td>11</td>
+            <td>0</td>
+            <td>0.02</td>
+            <td>0.07</td>
+            <td>0.05</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">POST On Session</td>
+            <td>17</td>
+            <td>0</td>
+            <td>0.02</td>
+            <td>0.07</td>
+            <td>0.05</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Status Should Be</td>
+            <td>43</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Suite Setup Con Autenticacion</td>
+            <td>5</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Validar Campo</td>
+            <td>4</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          <tr>
+            <td class="td_left">Verificar Estructura Base</td>
+            <td>4</td>
+            <td>0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+            <td>0.0</td>
+          </tr>
+          
+          
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section" id="details">
+      <h2 style="color:silver">Details</h2>
+      <div class="search-container">
+        <input type="text" hidden id="suiteSearch" placeholder="Search suites..." onkeyup="filterSuites()">
+      </div>
+
+      <!-- Status Filter Buttons -->
+      <div class="filter-buttons">
+        <button class="total" onclick="filterByStatus('all')">All</button>
+        <button class="pass" onclick="filterByStatus('pass')">Pass</button>
+        <button class="fail" onclick="filterByStatus('fail')">Fail</button>
+        <button class="skip" onclick="filterByStatus('skip')">Skip</button>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 scroll suite-tracker">
+          <div class="suite-list" id="suiteList">
+            
+            
+            
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s1-s1"
+              data-status="pass" onclick="updateDetails('s1-s1-s1')">
+              <div class="title">Tests.01 Auth.TC Auth</div>
+            </div>
+            
+            
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s2-s1"
+              data-status="pass" onclick="updateDetails('s1-s2-s1')">
+              <div class="title">Tests.02 Entidades.TC Clientes</div>
+            </div>
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s2-s2"
+              data-status="pass" onclick="updateDetails('s1-s2-s2')">
+              <div class="title">Tests.02 Entidades.TC Pacientes</div>
+            </div>
+            
+            
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s3-s1"
+              data-status="pass" onclick="updateDetails('s1-s3-s1')">
+              <div class="title">Tests.03 Agenda.TC Citas</div>
+            </div>
+            
+            
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s4-s1"
+              data-status="pass" onclick="updateDetails('s1-s4-s1')">
+              <div class="title">Tests.04 Inventario.TC Productos</div>
+            </div>
+            
+            
+            
+            
+            
+            <div class="card suite-card pass" id="s1-s5-s1"
+              data-status="pass" onclick="updateDetails('s1-s5-s1')">
+              <div class="title">Tests.05 Integracion.TC Flujo E2E</div>
+            </div>
+            
+            
+          </div>
+        </div>
+
+        <div class="col-md-8 scroll">
+          <div class="suite-details">
+            <div id="suite-description">
+              
+              
+              
+              
+              
+              
+              <div class="suite-content" id="s1-s1-s1_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.01 Auth.TC Auth</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>8</b></td>
+                      <td class="text-success"><b>8</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.320000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-001: Health Check Del API Gateway</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.012000</p>
+                      <p><b>Tags:</b> auth, health, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-002: Login Exitoso Con Credenciales Validas</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.063000</p>
+                      <p><b>Tags:</b> auth, positivo, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-003: Login Fallido - Password Incorrecto</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.067000</p>
+                      <p><b>Tags:</b> auth, negativo, seguridad</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-004: Login Fallido - Email Inexistente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.015000</p>
+                      <p><b>Tags:</b> auth, negativo, seguridad</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-005: Login Fallido - Campos Vacios</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.016000</p>
+                      <p><b>Tags:</b> auth, negativo, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-006: Ruta Sin Token Responde (Gateway requiresAuth=false)</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.023000</p>
+                      <p><b>Tags:</b> auth, configuracion, seguridad</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-007: Token Malformado No Interrumpe Gateway (requiresAuth=false)</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.021000</p>
+                      <p><b>Tags:</b> auth, configuracion, seguridad</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-AUTH-008: Token Valido Permite Acceso A Ruta Protegida</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.094000</p>
+                      <p><b>Tags:</b> auth, positivo, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+              
+              
+              
+              <div class="suite-content" id="s1-s2-s1_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.02 Entidades.TC Clientes</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>9</b></td>
+                      <td class="text-success"><b>9</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.405000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-001: Listar Todos Los Clientes</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.025000</p>
+                      <p><b>Tags:</b> clientes, listado, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-002: Crear Nuevo Cliente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.076000</p>
+                      <p><b>Tags:</b> clientes, crud, positivo, setup</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-003: Obtener Cliente Por ID</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.017000</p>
+                      <p><b>Tags:</b> clientes, crud, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-004: Actualizar Ciudad Y Celular Con PATCH</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.066000</p>
+                      <p><b>Tags:</b> clientes, crud, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-005: Crear Cliente Con Email Duplicado Retorna Error</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.080000</p>
+                      <p><b>Tags:</b> clientes, negativo, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-006: Crear Cliente Sin Campos Obligatorios</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.058000</p>
+                      <p><b>Tags:</b> clientes, negativo, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-007: Obtener Cliente Con ID Inexistente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.018000</p>
+                      <p><b>Tags:</b> clientes, negativo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-008: Eliminar Cliente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.021000</p>
+                      <p><b>Tags:</b> cleanup, clientes, crud</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CLI-009: Cliente Eliminado Retorna 404</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.015000</p>
+                      <p><b>Tags:</b> cleanup, clientes, negativo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+              
+              <div class="suite-content" id="s1-s2-s2_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.02 Entidades.TC Pacientes</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>7</b></td>
+                      <td class="text-success"><b>7</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.344000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-001: Listar Todos Los Pacientes</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.019000</p>
+                      <p><b>Tags:</b> listado, pacientes, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-002: Crear Nuevo Paciente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.072000</p>
+                      <p><b>Tags:</b> crud, pacientes, positivo, setup</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-003: Obtener Paciente Por ID</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.018000</p>
+                      <p><b>Tags:</b> crud, pacientes, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-004: Actualizar Peso Y Alimento Con PATCH</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.071000</p>
+                      <p><b>Tags:</b> crud, pacientes, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-005: Crear Paciente Sin ClienteId Retorna Error</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.065000</p>
+                      <p><b>Tags:</b> negativo, pacientes, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-006: Obtener Paciente Inexistente Retorna 404</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.015000</p>
+                      <p><b>Tags:</b> negativo, pacientes</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PAC-007: Eliminar Paciente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.024000</p>
+                      <p><b>Tags:</b> cleanup, crud, pacientes</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+              
+              
+              
+              <div class="suite-content" id="s1-s3-s1_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.03 Agenda.TC Citas</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>10</b></td>
+                      <td class="text-success"><b>10</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.548000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-001: Listar Todas Las Citas</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.048000</p>
+                      <p><b>Tags:</b> citas, listado, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-002: Crear Nueva Cita</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.075000</p>
+                      <p><b>Tags:</b> citas, crud, positivo, setup</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-003: Obtener Cita Por ID</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.024000</p>
+                      <p><b>Tags:</b> citas, crud, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-004: Actualizar Motivo Con PATCH</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.067000</p>
+                      <p><b>Tags:</b> citas, crud, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-005: Filtrar Citas Por PacienteId</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.026000</p>
+                      <p><b>Tags:</b> citas, filtros, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-006: Filtrar Citas Por Tipo</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.036000</p>
+                      <p><b>Tags:</b> citas, filtros, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-007: Filtrar Citas Por Rango De Fechas</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.028000</p>
+                      <p><b>Tags:</b> citas, filtros, positivo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-008: Crear Cita Sin PacienteId Retorna 400</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.057000</p>
+                      <p><b>Tags:</b> citas, negativo, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-009: Obtener Cita Inexistente Retorna 404</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.014000</p>
+                      <p><b>Tags:</b> citas, negativo</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-CIT-010: Eliminar Cita</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.020000</p>
+                      <p><b>Tags:</b> citas, cleanup, crud</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+              
+              
+              
+              <div class="suite-content" id="s1-s4-s1_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.04 Inventario.TC Productos</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>11</b></td>
+                      <td class="text-success"><b>11</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.439000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-001: Listar Todos Los Productos</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.047000</p>
+                      <p><b>Tags:</b> listado, productos, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-002: Crear Nuevo Producto</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.029000</p>
+                      <p><b>Tags:</b> crud, positivo, productos, setup</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-003: Obtener Producto Por ID</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.020000</p>
+                      <p><b>Tags:</b> crud, positivo, productos</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-004: Actualizar Precio Y Stock Minimo Con PATCH</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.072000</p>
+                      <p><b>Tags:</b> crud, positivo, productos</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-005: Buscar Producto Por Nombre</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.021000</p>
+                      <p><b>Tags:</b> busqueda, positivo, productos</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-006: Buscar Sin Parametro Q Retorna 400</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.014000</p>
+                      <p><b>Tags:</b> busqueda, negativo, productos, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-007: Crear Producto Sin Nombre Retorna 400</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.059000</p>
+                      <p><b>Tags:</b> negativo, productos, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-008: Crear Producto Sin Precio De Venta Retorna 400</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.059000</p>
+                      <p><b>Tags:</b> negativo, productos, validacion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-009: Obtener Producto Inexistente Retorna 404</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.016000</p>
+                      <p><b>Tags:</b> negativo, productos</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-010: Listar Productos Con Stock Bajo</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.068000</p>
+                      <p><b>Tags:</b> inventario, productos, smoke</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-PRD-011: Eliminar Producto</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.021000</p>
+                      <p><b>Tags:</b> cleanup, crud, productos</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+              
+              
+              
+              <div class="suite-content" id="s1-s5-s1_details" style="display: none;">
+                <h4 class="title" style="color:gray">Tests.05 Integracion.TC Flujo E2E</h4>
+                <table class="suite-table">
+                  <thead>
+                    <tr>
+                      <th>Total</th>
+                      <th>Pass</th>
+                      <th>Fail</th>
+                      <th>Skip</th>
+                      <th>Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><b>7</b></td>
+                      <td class="text-success"><b>7</b></td>
+                      <td class="text-danger"><b>0</b></td>
+                      <td class="text-warning"><b>0</b></td>
+                      <td>0:00:00.432000</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="row"></div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-001: Registrar Nuevo Dueno De Mascota</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.027000</p>
+                      <p><b>Tags:</b> e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-002: Registrar Mascota Del Cliente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.072000</p>
+                      <p><b>Tags:</b> e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-003: Agendar Cita Para La Mascota</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.075000</p>
+                      <p><b>Tags:</b> e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-004: Consultar Agenda Del Paciente</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.025000</p>
+                      <p><b>Tags:</b> e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-005: Registrar Producto En Inventario Para La Cita</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.069000</p>
+                      <p><b>Tags:</b> e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-006: Verificar Consistencia De Datos Entre Servicios</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.073000</p>
+                      <p><b>Tags:</b> consistency, e2e, flujo-completo, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card test-item">
+                  <div class="card-body">
+                    <h5 class="test-name pass title">TC-E2E-007: Limpiar Datos Del Flujo E2E</h5>
+                    <div class="test-details">
+                      <p><b>Duration:</b> 0:00:00.077000</p>
+                      <p><b>Tags:</b> cleanup, e2e, integracion</p>
+                      
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.1.0/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+
+
+
+    <script>
+
+      function showSection(targetId) {
+        // Remove active class from all links and sections
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+        document.querySelectorAll('.content .section').forEach(section => section.style.display = 'none');
+
+        // Add active class to the clicked link and show the corresponding section
+        document.querySelector(`.sidebar .nav-link[href="#${targetId}"]`).classList.add('active');
+        document.getElementById(targetId).style.display = 'block';
+
+      }
+
+      // Event listener for hash change and initial load
+      window.addEventListener('hashchange', () => {
+        const targetId = window.location.hash.replace('#', '') || 'dashboard';
+        showSection(targetId);
+      });
+
+      // Initial load based on hash or default to 'dashboard'
+      document.addEventListener('DOMContentLoaded', () => {
+        const targetId = window.location.hash.replace('#', '') || 'dashboard';
+        showSection(targetId);
+      });
+
+      // Initialize DataTables
+      $(document).ready(function () {
+        // Initialize DataTables
+        $('#sm, #tm, #kmt').DataTable({
+          dom: '<"top"lfB>rtip',
+          order: [[2, 'desc']],
+          buttons: [
+            {
+              extend: 'copy',
+              className: 'copyButton dt-button',
+              text: 'Copy',
+              filename: function () {
+                return "Metrics" + '-' + new Date().toLocaleString();
+              },
+              exportOptions: {
+                columns: ':visible'
+              }
+            },
+            {
+              extend: 'csv',
+              className: 'csvButton dt-button',
+              text: 'CSV',
+              filename: function () {
+                return "Metrics" + '-' + new Date().toLocaleString();
+              },
+              exportOptions: {
+                columns: ':visible'
+              }
+            },
+            {
+              extend: 'excel',
+              className: 'excelButton dt-button',
+              text: 'Excel',
+              filename: function () {
+                return "Metrics" + '-' + new Date().toLocaleString();
+              },
+              exportOptions: {
+                columns: ':visible',
+              }
+            },
+            {
+              extend: 'print',
+              className: 'printButton dt-button',
+              text: 'Print',
+              filename: function () {
+                return "Metrics" + '-' + new Date().toLocaleString();
+              },
+              exportOptions: {
+                columns: ':visible',
+                alignment: 'left',
+              }
+            },
+            {
+              extend: 'colvis',
+              className: 'colviButton dt-button',
+              text: 'Hide',
+              postfixButtons: ['colvisRestore']
+            }
+          ],
+          lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+          responsive: true,
+          initComplete: function () {
+            this.api().columns().every(function () {
+              var column = this;
+              $('input', this.footer()).on('keyup change', function () {
+                if (column.search() !== this.value) {
+                  column.search(this.value).draw();
+                }
+              });
+            });
+          }
+        });
+      });
+    </script>
+
+    <script>
+      window.onload = function () {
+        barChart('#suitePie', "6", "0", "0");
+        pieChart('#testPie', "52", "0", "0");
+        barChart('#keywordPie', "210", "0", "0");
+      };
+    </script>
+    <script>
+      function pieChart(chartID, passed, failed, skipped) {
+        var options = {
+          series: [parseInt(passed), parseInt(failed), parseInt(skipped)],
+          chart: {
+            type: 'donut',
+            width: 300,
+          },
+          labels: ["Pass", "Fail", "Skip"],
+          legend: {
+            show: false,
+          },
+          colors: ['#2ecc71', '#fc6666', '#ffa500'],
+        };
+
+        var chart = new ApexCharts(document.querySelector(chartID), options);
+        chart.render();
+      }
+    </script>
+    <script>
+      function barChart(chartID, passed, failed, skipped) {
+        var options = {
+          series: [{
+            name: 'Pass',
+            data: [parseInt(passed)]
+          },
+          {
+            name: 'Fail',
+            data: [parseInt(failed)]
+          },
+          {
+            name: 'Skip',
+            data: [parseInt(skipped)]
+          }],
+          chart: {
+            type: 'bar',
+            height: 120,
+            stacked: true,
+            toolbar: {
+              show: false
+            },
+          },
+          plotOptions: {
+            bar: {
+              horizontal: true,
+              dataLabels: {
+                total: {
+                  enabled: true,
+                  offsetX: 0,
+                  style: {
+                    fontSize: '12px',
+                    fontWeight: 100
+                  }
+                }
+              }
+            },
+          },
+          stroke: {
+            width: 2,
+            colors: ['#fff']
+          },
+          labels: [""],
+          legend: {
+            show: false,
+          },
+          colors: ['#2ecc71', '#fc6666', '#ffa500'],
+        };
+
+        var chart = new ApexCharts(document.querySelector(chartID), options);
+        chart.render();
+      }
+    </script>
+    <script>
+      var passArray = [];
+      var failArray = [];
+      var catgArray = [];
+
+      
+
+      var options = {
+        series: [{
+          name: 'Fail Percentage',
+          data: passArray,
+          type: "line"
+        }, {
+          name: 'Fail',
+          data: failArray,
+          type: "column",
+        }],
+        chart: {
+          type: 'line',
+          height: 350,
+          // stacked: true,
+        },
+
+        plotOptions: {
+          bar: {
+            dataLabels: {
+              position: 'center',
+              hideOverflowingLabels: true
+            }
+          },
+        },
+        colors: ['#ea9999', '#fc6666'],
+        xaxis: {
+          categories: catgArray,
+          tickPlacement: 'off',
+          labels: {
+            show: false,
+            trim: true
+          }
+        },
+        yaxis: [{
+          title: {
+            text: 'Suite Fail Percentage',
+          },
+
+        }, {
+          opposite: true,
+          title: {
+            text: 'Suite Fail Count'
+          }
+        }],
+        fill: {
+          opacity: 0.9
+        },
+        tooltip: {
+          y: {
+            formatter: function (val) {
+              return val
+            }
+          },
+          x: {
+            show: true
+          }
+        }
+      };
+
+      var chart = new ApexCharts(document.querySelector("#suiteFailureLineID"), options);
+      chart.render();
+
+    </script>
+    <script>
+      var time_group = [];
+      var test_count = [];
+
+      
+      time_group.push("0.0 - 0.0 min");
+      test_count.push(52);
+      
+
+      var options = {
+        series: [{
+          name: "Test Count",
+          data: test_count
+        }],
+        chart: {
+          type: 'area',
+          height: 350
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            borderRadiusApplication: 'end',
+            horizontal: true,
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        xaxis: {
+          categories: time_group,
+        }
+      };
+
+      var chart = new ApexCharts(document.querySelector("#testExecutionTrends"), options);
+      chart.render();
+
+    </script>
+    <script>
+      function openInNewTab(url, element_id) {
+        var element_id = element_id;
+        var win = window.open(url, '_blank');
+        win.focus();
+        $('body').scrollTo(element_id);
+      }
+    </script>
+    <script>
+      $(window).on('load', function () { $('.loader').fadeOut(); });
+    </script>
+    <script>
+      function updateDetails(selectedSuite) {
+        // Hide all issue content divs
+        const contents = document.querySelectorAll('.suite-content');
+        contents.forEach(content => {
+          content.style.display = 'none';
+        });
+
+        // Show the selected suite details
+        const selectedContent = document.getElementById(selectedSuite + '_details');
+        if (selectedContent) {
+          selectedContent.style.display = 'block';
+        }
+
+      }
+    </script>
+    <script>
+      function filterSuites() {
+        const searchInput = document.getElementById('suiteSearch').value.toLowerCase();
+        const suites = document.querySelectorAll('.suite-card');
+        suites.forEach(suite => {
+          const suiteName = suite.innerText.toLowerCase();
+          suite.style.display = suiteName.includes(searchInput) && isStatusVisible(suite) ? "" : "none";
+        });
+      }
+
+      function filterByStatus(status) {
+        document.querySelector('.filter-buttons').dataset.status = status;
+        filterSuites(); // Reapply filters to update visibility
+      }
+
+      function isStatusVisible(suite) {
+        const status = document.querySelector('.filter-buttons').dataset.status;
+        return status === 'all' || suite.dataset.status === status;
+      }
+    </script>
+
+</body>
+
+</html>
